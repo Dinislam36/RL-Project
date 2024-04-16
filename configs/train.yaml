@@ -1,0 +1,5 @@
+lr: 3e-4
+gamma: 0.99
+state_dim: [120, 120]
+device: cuda:1
+num_episodes: 10
