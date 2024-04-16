@@ -2,7 +2,7 @@ import pygame
 import numpy as np
 import gym
 from gym.spaces import Discrete, Box, MultiBinary
-from pygame_utils import Hero, Hitbox, Bullet, play, create_n_bullets, check_collision, collide_hitbox_with_bullets
+from src.pygame_utils import Hero, Hitbox, Bullet, play, create_n_bullets, check_collision, collide_hitbox_with_bullets
 
 
 class BOWAPEnv(gym.Env):

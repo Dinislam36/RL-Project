@@ -1,6 +1,6 @@
 import pygame
 import numpy as np
-from utils import rot_center, process_keys
+from src.utils import rot_center, process_keys
 
 
 # Create n bullets rotated equally on position
