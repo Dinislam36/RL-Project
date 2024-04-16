@@ -336,8 +336,8 @@ def play(movement_logs=False):
         scorefield.blit(score_text, (10, H // 2 - 50))
         scorefield.blit(death_text, (10, H // 2))
 
-        for bullet in bullets:
-            pygame.draw.circle(playfield, LIGHT_BLUE, bullet.collision_circle_center, bullet.collision_circle_radius)
+        #for bullet in bullets:
+        #    pygame.draw.circle(playfield, LIGHT_BLUE, bullet.collision_circle_center, bullet.collision_circle_radius)
         # Paste playfield and scorefield on main screen
         sc.blit(playfield, (0, 0))
         sc.blit(scorefield, (W_playfield, 0))
