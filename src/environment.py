@@ -269,8 +269,8 @@ class BOWAPEnv(gym.Env):
 
     def __collide_hitbox_with_bullets(self):
         """Check collision of hitbox and bullets"""
-        hitbox_pos_x = self.state[0]
-        hitbox_pos_y = self.state[1]
+        hitbox_pos_y = self.state[0]
+        hitbox_pos_x = self.state[1]
         min_d = 10000
         for bullet in self.bullets:
             d, flag = self.__check_collision(bullet.collision_circle_center,

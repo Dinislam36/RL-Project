@@ -184,7 +184,7 @@ def play(movement_logs=False):
     pygame.draw.rect(scorefield, LIGHT_BLUE, (0, 0, W_scorefield, H))
 
     # Create hero and hitbox
-    hero_surface = pygame.Surface((48, 72))
+    hero_surface = pygame.Surface((72, 48))
     reimu = Hero((24, 36))
     hitbox = Hitbox((24, 42))
     hitbox_center = (32, 50)
