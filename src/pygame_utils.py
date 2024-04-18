@@ -76,6 +76,8 @@ class Bullet(pygame.sprite.Sprite):
         # Position of the bullet (float)
         self.pos_x = float(self.rect.x)
         self.pos_y = float(self.rect.y)
+        # Check if bullet is grazed
+        self.grazed = False
 
         self.timer = 180  # How many frames bullet will alive
         self.add(group)

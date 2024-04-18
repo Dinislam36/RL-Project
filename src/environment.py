@@ -57,6 +57,7 @@ class BOWAPEnv(gym.Env):
         self.init_hitbox_pos_x = self.max_x // 2
         self.init_hitbox_pos_y = self.max_y - 24 * 4
         self.hitbox_size = 4
+        self.grazebox_size = 8
 
         # Hero images to render
         self.hero_surface = pygame.Surface((72, 48))
@@ -138,10 +139,11 @@ class BOWAPEnv(gym.Env):
 
         # Get closest dist (was used previously as reward) and collision flag
         closest_dist, collide_flag = self.__collide_hitbox_with_bullets()
+        graze_dist, graze_flag, graze_count = self.__collide_hitbox_with_bullets(graze=True)
         # reward = closest_dist / self.max_dist
 
         # Reward increases as player survives
-        reward = 0.1
+        reward = 0.1 + graze_count * 0.2
 
         if action != 0:
             reward /= 2
@@ -258,7 +260,7 @@ class BOWAPEnv(gym.Env):
                          render=False,
                          loaded_img=self.img)
 
-    def __check_collision(self, bullet_center, bullet_radius, hitbox_center, hitbox_radius):
+    def __check_collision(self, bullet_center, bullet_radius, hitbox_center, hitbox_radius, graze=False):
         """Check collision of hitbox and single bullet"""
         b_c_x, b_c_y = bullet_center
         h_c_x, h_c_y = hitbox_center
@@ -267,21 +269,29 @@ class BOWAPEnv(gym.Env):
             return dist, True
         return dist, False
 
-    def __collide_hitbox_with_bullets(self):
+    def __collide_hitbox_with_bullets(self, graze=False):
         """Check collision of hitbox and bullets"""
         hitbox_pos_y = self.state[0]
         hitbox_pos_x = self.state[1]
         min_d = 10000
+        hitbox_size = self.hitbox_size if not graze else self.grazebox_size
+        graze_count = 0
         for bullet in self.bullets:
             d, flag = self.__check_collision(bullet.collision_circle_center,
                                              bullet.collision_circle_radius,
                                              (hitbox_pos_x, hitbox_pos_y),
-                                             self.hitbox_size)
+                                             hitbox_size)
             if d < min_d:
                 min_d = d
-            if flag:
+            if flag and not graze:
                 return d, True
-        return min_d, False
+            if flag and graze and not bullet.grazed:
+                bullet.grazed = True
+                graze_count += 1
+        if not graze:
+            return min_d, False
+        if graze:
+            return min_d, False, graze_count
 
     def __bullets_to_array(self):
         """Convert bullets sprite group to list of x and y positions"""
