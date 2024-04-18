@@ -155,7 +155,7 @@ class BOWAPEnv(gym.Env):
         # reward = closest_dist / self.max_dist
 
         # Reward increases as player survives
-        reward = 0.1 + graze_count * 0.2
+        reward = -0.01 #0.1 + graze_count * 0.2
 
         #if action != 0:
             #reward /= 2
@@ -170,7 +170,7 @@ class BOWAPEnv(gym.Env):
             # Set increasing reward to 0
             self.frames_from_last_death = 0
             # Death reward -100
-            reward = -5
+            reward = -1
 
         # Done if timer gone
         done = True if self.frame >= self.max_frame else False
@@ -263,9 +263,9 @@ class BOWAPEnv(gym.Env):
         self.bullet_offset %= 360
         self.bullet_offset_speed += self.bullet_offset_acceleration
         create_n_bullets((self.bullet_spawn_pos_y, self.bullet_spawn_pos_x),
-                         6,
+                         4,
                          self.bullet_offset,
-                         5,
+                         4,
                          self.bullets,
                          self.max_x,
                          self.max_y,
