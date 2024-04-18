@@ -141,7 +141,7 @@ class BOWAPEnv(gym.Env):
         # reward = closest_dist / self.max_dist
 
         # Reward increases as player survives
-        reward = self.frames_from_last_death / 100
+        reward = 0.1
 
         if action != 0:
             reward /= 2

@@ -91,8 +91,8 @@ class Bullet(pygame.sprite.Sprite):
         # Kill if out of the screen or time out
         if (self.rect.centerx <= 0 or
                 self.rect.centery <= 0 or
-                self.rect.centerx >= self.playfield_width or
-                self.rect.centery >= self.playfield_height or
+                self.rect.centery >= self.playfield_width or
+                self.rect.centerx >= self.playfield_height or
                 self.timer == 0):
             self.kill()
 

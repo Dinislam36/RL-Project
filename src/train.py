@@ -18,7 +18,8 @@ torch.manual_seed(0)
 @hydra.main(version_base=None, config_path="../configs", config_name="train.yaml")
 def main(cfg: DictConfig) -> None:
     env = BOWAPEnv()
-    resize = Resize(cfg.state_dim)
+    size = tuple([int(x) for x in cfg.state_dim])
+    resize = Resize(size)
 
     learning_rate = cfg.lr
     gamma = cfg.gamma
