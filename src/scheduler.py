@@ -8,7 +8,7 @@ class CustomScheduler:
         self.initial_lr = optim.param_groups[0]['lr']
         self.last_reward = None
         self.same_reward_streak = 0
-        self.sigmoid = lambda x: 1 / (1 + np.exp(-0.4*x)) - 0.3
+        self.sigmoid = lambda x: 1 / (1 + np.exp(-0.4*x)) - 0.4
 
     def step(self, reward):
         if reward == self.last_reward:
