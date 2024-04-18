@@ -1,7 +1,7 @@
-lr: 3e-4
+lr: 5e-4
 gamma: 0.4
-state_dim: [120, 120]
+state_dim: [256, 256]
 device: cuda:0
 num_episodes: 10
 eps_train: 0.2
-clip_value: 0.01
+clip_value: 0.1
