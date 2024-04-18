@@ -6,7 +6,7 @@ from src.pygame_utils import Hero, Hitbox, Bullet, play, create_n_bullets, check
 
 
 class BOWAPEnv(gym.Env):
-    def __init__(self):
+    def __init__(self, random=False, seed=None):
 
         # Preload img for faster bullet spawning
         pygame.init()
@@ -75,9 +75,11 @@ class BOWAPEnv(gym.Env):
         self.bullet_size = 4
 
         # Bullet info
-        self.bullet_offset = -4.5
-        self.bullet_offset_speed = 0.0
-        self.bullet_offset_acceleration = 0.225
+        self.random = random
+        self.seed = seed
+        if random and seed:
+            np.random.seed(seed)
+        self.__init_bullet_params()
 
         # Hero speed
         self.hero_speed_unfocused = 5 * 24 // 16
@@ -101,6 +103,16 @@ class BOWAPEnv(gym.Env):
 
         # Reward increases as player lives
         self.frames_from_last_death = 0
+
+    def __init_bullet_params(self):
+        if self.random:
+            self.bullet_offset = np.random.uniform(-5, -4)
+            self.bullet_offset_speed = np.random.uniform(0, 2)
+            self.bullet_offset_acceleration = np.random.uniform(0.175, 0.3)
+        else:
+            self.bullet_offset = -4.5
+            self.bullet_offset_speed = 0.0
+            self.bullet_offset_acceleration = 0.225
 
     def step(self, action):
         # Get pressed keys from action
@@ -192,7 +204,7 @@ class BOWAPEnv(gym.Env):
         return state
 
     # Reset env
-    def reset(self):
+    def reset(self, seed=None):
         # Set initial state
         self.state = self.state_template.copy()
         self.state[0] = self.init_hitbox_pos_x
@@ -208,9 +220,9 @@ class BOWAPEnv(gym.Env):
         self.log = []
 
         # Clear bullet spawn
-        self.bullet_offset = -4.5
-        self.bullet_offset_speed = 0.0
-        self.bullet_offset_acceleration = 0.225
+        if seed:
+            np.random.seed(seed)
+        self.__init_bullet_params()
 
         return self.__render_state_to_img(self.state[:2], self.bullets)
 
