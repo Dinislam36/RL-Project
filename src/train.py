@@ -46,8 +46,9 @@ def main(cfg: DictConfig) -> None:
         while not done:
             # Forward pass through Actor to get action probabilities
             action_probs = actor(state)
-            action = torch.multinomial(action_probs, 1).item()  # Sample action
 
+            # Sample action
+            action = torch.multinomial(action_probs, 1).item()
             # Take action in the environment
             next_state, reward, done, _ = env.step(action)
             rewards.append(reward)
@@ -66,7 +67,7 @@ def main(cfg: DictConfig) -> None:
             if not done:
                 target_Q = reward + gamma * critic(next_state)
             else:
-                target_Q = torch.tensor(reward).view(1,1).to(device)
+                target_Q = torch.tensor(reward).view(1, 1).to(device)
 
             # Critic loss (MSE between predicted and target Q-value)
             critic_loss = torch.nn.functional.mse_loss(Q_value, target_Q.detach())
