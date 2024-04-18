@@ -145,8 +145,8 @@ class BOWAPEnv(gym.Env):
         # Reward increases as player survives
         reward = 0.1 + graze_count * 0.2
 
-        if action != 0:
-            reward /= 2
+        #if action != 0:
+            #reward /= 2
         # reward = 1
 
         # If collision happened
@@ -158,7 +158,7 @@ class BOWAPEnv(gym.Env):
             # Set increasing reward to 0
             self.frames_from_last_death = 0
             # Death reward -100
-            reward = -100
+            reward = -5
 
         # Done if timer gone
         done = True if self.frame >= self.max_frame else False

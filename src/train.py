@@ -9,6 +9,7 @@ from torchvision.transforms import Resize
 
 from src.models import Actor, Critic
 from src.environment import BOWAPEnv
+from src.scheduler import CustomScheduler
 
 
 np.random.seed(0)
@@ -31,6 +32,8 @@ def main(cfg: DictConfig) -> None:
 
     actor_optimizer = optim.Adam(actor.parameters(), lr=learning_rate)
     critic_optimizer = optim.Adam(critic.parameters(), lr=learning_rate)
+    actor_scheduler = CustomScheduler(actor_optimizer)
+    critic_scheduler = CustomScheduler(critic_optimizer)
 
     # Training loop
     for episode in range(cfg.num_episodes):
@@ -73,6 +76,7 @@ def main(cfg: DictConfig) -> None:
             critic_loss = torch.nn.functional.mse_loss(Q_value, target_Q.detach())
             critic_optimizer.zero_grad()
             critic_loss.backward()
+            torch.nn.utils.clip_grad_norm_(critic.parameters(), cfg.clip_value)
             critic_optimizer.step()
 
             # Advantage calculation (estimated future reward - critic prediction)
@@ -81,8 +85,11 @@ def main(cfg: DictConfig) -> None:
             actor_loss = -torch.log(action_probs[0, action]) * advantage.item()
             actor_optimizer.zero_grad()
             actor_loss.backward()
+            torch.nn.utils.clip_grad_norm_(actor.parameters(), cfg.clip_value)
             actor_optimizer.step()
 
+            actor_scheduler.step(reward)
+            critic_scheduler.step(reward)
             # Update state for next iteration
             state = next_state
         # Print episode stats (optional)
