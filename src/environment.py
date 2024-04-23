@@ -6,39 +6,42 @@ from src.pygame_utils import Hero, Hitbox, Bullet, play, create_n_bullets, check
 
 
 class BOWAPEnv(gym.Env):
-    def __init__(self, random=False, seed=None, survive_time=45, terminate_on_death=False):
+    def __init__(self, random=False, seed=None, survive_time=45, terminate_on_death=False, num_actions=17):
 
         # Preload img for faster bullet spawning
         pygame.init()
         self.sc = pygame.display.set_mode((1, 1), pygame.NOFRAME)
         self.img = pygame.image.load("../assets/bullet.png")
         # Action space
-        self.action_space = Discrete(17)
+        self.action_space = Discrete(num_actions)
         # Surviving time(s)
         self.survive_time = survive_time
+        self.num_actions = num_actions
         # End env if dead
         self.terminate_on_death = terminate_on_death
         # Action dict. Map action to pressed keys:
         # int -> Up, Down, Left, Right, Shift
         self.action_dict = {
-            0: (False, False, False, False, False),
-            1: (False, False, True, False, False),
-            2: (False, False, False, True, False),
+            0: (False, False, True, False, False),
+            1: (False, False, False, True, False),
+            2: (False, False, False, False, False),
             3: (True, False, False, False, False),
             4: (False, True, False, False, False),
-            5: (False, False, True, False, True),
-            6: (False, False, False, True, True),
-            7: (True, False, False, False, True),
-            8: (False, True, False, False, True),
-            9: (True, False, True, False, False),
-            10: (False, True, True, False, False),
-            11: (True, False, False, True, False),
-            12: (False, True, False, True, False),
+            5: (True, False, True, False, False),
+            6: (False, True, True, False, False),
+            7: (True, False, False, True, False),
+            8: (False, True, False, True, False),
+            9: (False, False, True, False, True),
+            10: (False, False, False, True, True),
+            11: (True, False, False, False, True),
+            12: (False, True, False, False, True),
             13: (True, False, True, False, True),
             14: (False, True, True, False, True),
             15: (True, False, False, True, True),
             16: (False, True, False, True, True)
         }
+
+
 
         # Playfield size
         self.max_x = 576
@@ -158,7 +161,7 @@ class BOWAPEnv(gym.Env):
         # reward = closest_dist / self.max_dist
 
         # Reward increases as player survives
-        reward = 0.01 #0.1 + graze_count * 0.2
+        reward = self.frames_from_last_death / 1000 #0.1 + graze_count * 0.2
 
         #if action != 0:
             #reward /= 2
@@ -178,11 +181,11 @@ class BOWAPEnv(gym.Env):
         # Done if timer gone
         done = True if self.frame >= self.max_frame else False
         if done:
-            reward = 1
-        info = {}
+            reward = self.frame / 60
+        info = {'total_deaths': self.deaths, 'frames': self.frame, 'max_frames': self.max_frame}
         if self.terminate_on_death and collide_flag:
             done = True
-            reward = -1
+            reward = (self.frame - self.max_frame) / 60
         self.frame += 1
         return self.__render_state_to_img(self.state[:2], self.bullets), reward, done, info
 
@@ -269,9 +272,9 @@ class BOWAPEnv(gym.Env):
         self.bullet_offset %= 360
         self.bullet_offset_speed += self.bullet_offset_acceleration
         create_n_bullets((self.bullet_spawn_pos_y, self.bullet_spawn_pos_x),
-                         4,
+                         8,
                          self.bullet_offset,
-                         4,
+                         5,
                          self.bullets,
                          self.max_x,
                          self.max_y,

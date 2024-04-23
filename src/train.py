@@ -38,18 +38,21 @@ def calc_loss(rewards, actions, values, gamma, device):
         action_loss += -logprob * gain
 
         # How good V-value was predicted
-        value_loss += F.mse_loss(value.to(device), reward.to(device))
+        value_loss += F.smooth_l1_loss(value.to(device), reward.to(device))
         # Total loss
     return action_loss, value_loss
 
 
 @hydra.main(version_base=None, config_path="../configs", config_name="train.yaml")
 def main(cfg: DictConfig) -> None:
-    env = BOWAPEnv(random=True, survive_time=cfg.survive_time, terminate_on_death=cfg.terminate_on_death)
+    num_actions = cfg.num_actions
+    env = BOWAPEnv(random=True, survive_time=cfg.survive_time,
+                   terminate_on_death=cfg.terminate_on_death, num_actions=num_actions)
     size = tuple([int(x) for x in cfg.state_dim])
     resize = Resize(size)
 
     learning_rate = cfg.lr
+
     gamma = cfg.gamma
 
     # Initialize models and optimizer
@@ -82,7 +85,7 @@ def main(cfg: DictConfig) -> None:
             # Sample action
             action = action_distribution.sample()
             # Take action in the environment
-            next_state, reward, done, _ = env.step(action.item())
+            next_state, reward, done, info = env.step(action.item())
             rewards.append(reward)
 
             # Preprocess next state
@@ -112,6 +115,7 @@ def main(cfg: DictConfig) -> None:
         # Print episode stats (optional)
         print(f"Episode: {episode}, Total Reward: {sum(rewards):.4f},"
               f" Actor loss: {actor_loss.item():.4f}, critic_loss: {critic_loss.item():.4f}")
+        print(f"Episode info:\t{info}")
         Path("../weights").mkdir(exist_ok=True)
         torch.save(actor.state_dict(), "../weights/actor.pt")
         torch.save(critic.state_dict(), "../weights/critic.pt")
