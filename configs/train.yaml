@@ -13,3 +13,5 @@ terminate_on_death: False
 # 9 - Full no shift
 # 17 - Full with shift
 num_actions: 2
+num_bullets_spawn: 6
+bullets_speed: 5

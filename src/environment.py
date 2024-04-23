@@ -6,7 +6,14 @@ from src.pygame_utils import Hero, Hitbox, Bullet, play, create_n_bullets, check
 
 
 class BOWAPEnv(gym.Env):
-    def __init__(self, random=False, seed=None, survive_time=45, terminate_on_death=False, num_actions=17):
+    def __init__(self,
+                 random=False,
+                 seed=None,
+                 survive_time=45,
+                 terminate_on_death=False,
+                 num_actions=17,
+                 num_bullets_spawn=6,
+                 bullets_speed=5):
 
         # Preload img for faster bullet spawning
         pygame.init()
@@ -17,6 +24,8 @@ class BOWAPEnv(gym.Env):
         # Surviving time(s)
         self.survive_time = survive_time
         self.num_actions = num_actions
+        self.num_bullets_spawn = num_bullets_spawn
+        self.bullets_speed = bullets_speed
         # End env if dead
         self.terminate_on_death = terminate_on_death
         # Action dict. Map action to pressed keys:
@@ -272,9 +281,9 @@ class BOWAPEnv(gym.Env):
         self.bullet_offset %= 360
         self.bullet_offset_speed += self.bullet_offset_acceleration
         create_n_bullets((self.bullet_spawn_pos_y, self.bullet_spawn_pos_x),
-                         8,
+                         self.num_bullets_spawn,
                          self.bullet_offset,
-                         5,
+                         self.bullets_speed,
                          self.bullets,
                          self.max_x,
                          self.max_y,

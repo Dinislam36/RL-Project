@@ -47,7 +47,9 @@ def calc_loss(rewards, actions, values, gamma, device):
 def main(cfg: DictConfig) -> None:
     num_actions = cfg.num_actions
     env = BOWAPEnv(random=True, survive_time=cfg.survive_time,
-                   terminate_on_death=cfg.terminate_on_death, num_actions=num_actions)
+                   terminate_on_death=cfg.terminate_on_death,
+                   num_actions=num_actions, num_bullets_spawn=cfg.num_bullets_spawn,
+                   bullets_speed=cfg.bullets_speed)
     size = tuple([int(x) for x in cfg.state_dim])
     resize = Resize(size)
 
