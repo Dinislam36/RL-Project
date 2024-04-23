@@ -1,12 +1,12 @@
-lr: 5e-4
-gamma: 0.8
-state_dim: [120, 120]
+lr: 2e-4
+gamma: 0.9
+state_dim: [128, 128]
 device: cuda:0
 num_episodes: 100
 eps_train: 0.2
 clip_value: 0.1
-survive_time: 20
-terminate_on_death: False
+survive_time: 10
+terminate_on_death: True
 # 2 - Left, Right
 # 3 - Left, Right, Stay
 # 5 - Left, Right, Stay, Up, Down
@@ -15,3 +15,4 @@ terminate_on_death: False
 num_actions: 2
 num_bullets_spawn: 6
 bullets_speed: 5
+random: False

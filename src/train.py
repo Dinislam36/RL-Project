@@ -5,9 +5,10 @@ from omegaconf import DictConfig
 import numpy as np
 import torch
 from torch import optim
-from torchvision.transforms import Resize
+from torchvision import transforms
 import torch.nn.functional as F
 from torch.distributions import Categorical
+from PIL import Image
 
 from src.models import Actor, Critic
 from src.environment import BOWAPEnv
@@ -46,12 +47,18 @@ def calc_loss(rewards, actions, values, gamma, device):
 @hydra.main(version_base=None, config_path="../configs", config_name="train.yaml")
 def main(cfg: DictConfig) -> None:
     num_actions = cfg.num_actions
-    env = BOWAPEnv(random=True, survive_time=cfg.survive_time,
+    env = BOWAPEnv(random=cfg.random, survive_time=cfg.survive_time,
                    terminate_on_death=cfg.terminate_on_death,
                    num_actions=num_actions, num_bullets_spawn=cfg.num_bullets_spawn,
                    bullets_speed=cfg.bullets_speed)
     size = tuple([int(x) for x in cfg.state_dim])
-    resize = Resize(size)
+    #resize = Resize(size)
+    #normalize = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    transform = transforms.Compose([
+        transforms.Resize(size),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
 
     learning_rate = cfg.lr
 
@@ -71,11 +78,12 @@ def main(cfg: DictConfig) -> None:
     for episode in range(cfg.num_episodes):
         state = env.reset()
         # Preprocess state
-        state = (
-            resize(torch.tensor(state).permute((2, 0, 1)).unsqueeze(0))
-            .float()
-            .to(device)
-        )
+        #state = (
+            #normalize(resize(torch.tensor(state).permute((2, 0, 1)).unsqueeze(0))
+            #.float())
+            #.to(device)
+        #)
+        state = transform(Image.fromarray(state)).unsqueeze(0).to(device)
         done = False
         rewards = []
         actions = []
@@ -91,16 +99,17 @@ def main(cfg: DictConfig) -> None:
             rewards.append(reward)
 
             # Preprocess next state
-            next_state = (
-                resize(torch.tensor(next_state).permute((2, 0, 1)).unsqueeze(0))
-                .float()
-                .to(device)
-            )
+            #next_state = (
+                #resize(torch.tensor(next_state).permute((2, 0, 1)).unsqueeze(0))
+                #.float()
+                #.to(device)
+            #)
+
             # Critic prediction for current state and action
             Q_value = critic(state)
             actions.append((action_distribution.log_prob(action), action))
             values.append(Q_value)
-
+            state = transform(Image.fromarray(next_state)).unsqueeze(0).to(device)
             if done:
                 break
 

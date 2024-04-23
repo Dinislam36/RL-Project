@@ -26,6 +26,7 @@ class BOWAPEnv(gym.Env):
         self.num_actions = num_actions
         self.num_bullets_spawn = num_bullets_spawn
         self.bullets_speed = bullets_speed
+        self.actions = [0 for _ in range(num_actions)]
         # End env if dead
         self.terminate_on_death = terminate_on_death
         # Action dict. Map action to pressed keys:
@@ -130,6 +131,7 @@ class BOWAPEnv(gym.Env):
             self.bullet_offset_acceleration = 0.225
 
     def step(self, action):
+        self.actions[action] += 1
         # Get pressed keys from action
         up, down, left, right, shift = self.action_dict[action]
 
@@ -170,7 +172,7 @@ class BOWAPEnv(gym.Env):
         # reward = closest_dist / self.max_dist
 
         # Reward increases as player survives
-        reward = self.frames_from_last_death / 1000 #0.1 + graze_count * 0.2
+        reward = -1 #self.frames_from_last_death / 1000 #0.1 + graze_count * 0.2
 
         #if action != 0:
             #reward /= 2
@@ -185,16 +187,19 @@ class BOWAPEnv(gym.Env):
             # Set increasing reward to 0
             self.frames_from_last_death = 0
             # Death reward -100
-            reward = -1
+            reward = -50
+
+            self.state[0] = self.init_hitbox_pos_x
+            self.state[1] = self.init_hitbox_pos_y
 
         # Done if timer gone
         done = True if self.frame >= self.max_frame else False
         if done:
             reward = self.frame / 60
-        info = {'total_deaths': self.deaths, 'frames': self.frame, 'max_frames': self.max_frame}
+        info = {'total_deaths': self.deaths, 'frames': self.frame, 'max_frames': self.max_frame, 'actions': self.actions}
         if self.terminate_on_death and collide_flag:
             done = True
-            reward = (self.frame - self.max_frame) / 60
+            #reward = (self.frame - self.max_frame) / 60
         self.frame += 1
         return self.__render_state_to_img(self.state[:2], self.bullets), reward, done, info
 
@@ -224,6 +229,7 @@ class BOWAPEnv(gym.Env):
     # Reset env
     def reset(self, seed=None):
         # Set initial state
+        self.actions = [0 for _ in range(self.num_actions)]
         self.state = self.state_template.copy()
         self.state[0] = self.init_hitbox_pos_x
         self.state[1] = self.init_hitbox_pos_y
