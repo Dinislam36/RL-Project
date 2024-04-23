@@ -12,17 +12,11 @@ class Actor(nn.Module):
             nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),
         )
         # Define fully-connected layers for hidden representation
         self.fc = nn.Sequential(
             nn.Linear(
-                64 * (state_dim[0] // 16) * (state_dim[1] // 16), 128
+                16 * (state_dim[0] // 4) * (state_dim[1] // 4), 128
             ),  # Input based on conv output size
             nn.ReLU(),
             nn.Linear(128, 64),
@@ -51,16 +45,10 @@ class Critic(nn.Module):
             nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2)
         )
         # Define fully-connected layers for hidden representation (similar to Actor)
         self.fc = nn.Sequential(
-            nn.Linear(64 * (state_dim[0] // 16) * (state_dim[1] // 16), 128),
+            nn.Linear(16 * (state_dim[0] // 4) * (state_dim[1] // 4), 128),
             nn.ReLU(),
             nn.Linear(128, 64),
             nn.ReLU(),

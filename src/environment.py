@@ -6,7 +6,7 @@ from src.pygame_utils import Hero, Hitbox, Bullet, play, create_n_bullets, check
 
 
 class BOWAPEnv(gym.Env):
-    def __init__(self, random=False, seed=None):
+    def __init__(self, random=False, seed=None, survive_time=45, terminate_on_death=False):
 
         # Preload img for faster bullet spawning
         pygame.init()
@@ -14,7 +14,10 @@ class BOWAPEnv(gym.Env):
         self.img = pygame.image.load("../assets/bullet.png")
         # Action space
         self.action_space = Discrete(17)
-
+        # Surviving time(s)
+        self.survive_time = survive_time
+        # End env if dead
+        self.terminate_on_death = terminate_on_death
         # Action dict. Map action to pressed keys:
         # int -> Up, Down, Left, Right, Shift
         self.action_dict = {
@@ -86,7 +89,7 @@ class BOWAPEnv(gym.Env):
         self.hero_speed_focused = 2 * 24 // 16
 
         # Timer
-        self.max_frame = 60 * 45 - 1
+        self.max_frame = 60 * survive_time - 1
         self.frame = 0
 
         # Template for state
@@ -155,7 +158,7 @@ class BOWAPEnv(gym.Env):
         # reward = closest_dist / self.max_dist
 
         # Reward increases as player survives
-        reward = -0.01 #0.1 + graze_count * 0.2
+        reward = 0.01 #0.1 + graze_count * 0.2
 
         #if action != 0:
             #reward /= 2
@@ -174,9 +177,12 @@ class BOWAPEnv(gym.Env):
 
         # Done if timer gone
         done = True if self.frame >= self.max_frame else False
-
+        if done:
+            reward = 1
         info = {}
-
+        if self.terminate_on_death and collide_flag:
+            done = True
+            reward = -1
         self.frame += 1
         return self.__render_state_to_img(self.state[:2], self.bullets), reward, done, info
 

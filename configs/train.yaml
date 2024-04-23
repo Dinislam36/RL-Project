@@ -1,7 +1,9 @@
 lr: 5e-4
-gamma: 0.4
-state_dim: [256, 256]
+gamma: 0.999
+state_dim: [120, 120]
 device: cuda:0
-num_episodes: 10
+num_episodes: 100
 eps_train: 0.2
 clip_value: 0.1
+survive_time: 20
+terminate_on_death: True
