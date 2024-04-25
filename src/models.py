@@ -4,22 +4,25 @@ from torch import nn
 class Actor(nn.Module):
     def __init__(self, state_dim, action_dim):
         super(Actor, self).__init__()
-        # Define convolutional layers for image processing (adjust based on your image size)
         self.conv = nn.Sequential(
-            nn.Conv2d(3, 8, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(3, 32, kernel_size=(9, 9), stride=(4, 4), padding=3),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(32, 64, kernel_size=5, stride=1, padding=2),
+            nn.ReLU(),
+            # nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
         )
+        # Define convolutional layers for image processing (adjust based on your image size)
         # Define fully-connected layers for hidden representation
         self.fc = nn.Sequential(
             nn.Linear(
-                16 * (state_dim[0] // 4) * (state_dim[1] // 4), 128
+                128 * (state_dim[0] // 16) * (state_dim[1] // 16), 512
             ),  # Input based on conv output size
             nn.ReLU(),
-            nn.Linear(128, 64),
+            nn.Linear(512, 64),
             nn.ReLU(),
         )
         # Output layer for action probabilities (linear + tanh for probabilities)
@@ -39,18 +42,24 @@ class Critic(nn.Module):
         super(Critic, self).__init__()
         # Define convolutional layers for image processing (similar to Actor)
         self.conv = nn.Sequential(
-            nn.Conv2d(3, 8, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(3, 32, kernel_size=(9, 9), stride=(4, 4), padding=3),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(32, 64, kernel_size=5, stride=1, padding=2),
+            nn.ReLU(),
+            # nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2),
         )
-        # Define fully-connected layers for hidden representation (similar to Actor)
+        # Define convolutional layers for image processing (adjust based on your image size)
+        # Define fully-connected layers for hidden representation
         self.fc = nn.Sequential(
-            nn.Linear(16 * (state_dim[0] // 4) * (state_dim[1] // 4), 128),
+            nn.Linear(
+                128 * (state_dim[0] // 16) * (state_dim[1] // 16), 512
+            ),  # Input based on conv output size
             nn.ReLU(),
-            nn.Linear(128, 64),
+            nn.Linear(512, 64),
             nn.ReLU(),
         )
         # Output layer for Q-value estimation (linear)

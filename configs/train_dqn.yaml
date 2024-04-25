@@ -1,1 +1,24 @@
-state_dim: [120, 120]
+lr: 1e-4
+gamma: 0.3
+state_dim: [128, 128]
+device: cuda:0
+num_episodes: 100
+epsilon_decay: 0.95
+learning_rate: 3e-4
+# Eps-greedy
+eps_train: 0.2
+clip_value: 0.1
+survive_time: 10
+terminate_on_death: True
+# 2 - Left, Right
+# 3 - Left, Right, Stay
+# 5 - Left, Right, Stay, Up, Down
+# 9 - Full no shift
+# 17 - Full with shift
+num_actions: 5
+num_bullets_spawn: 3
+bullets_speed: 5
+random: False
+survive_reward: 1
+death_reward: -50
+frame_step: 4

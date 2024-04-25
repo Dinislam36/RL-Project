@@ -13,7 +13,10 @@ class BOWAPEnv(gym.Env):
                  terminate_on_death=False,
                  num_actions=17,
                  num_bullets_spawn=6,
-                 bullets_speed=5):
+                 bullets_speed=5,
+                 survive_reward=1,
+                 death_reward=50,
+                 hold_shift=False):
 
         # Preload img for faster bullet spawning
         pygame.init()
@@ -27,6 +30,9 @@ class BOWAPEnv(gym.Env):
         self.num_bullets_spawn = num_bullets_spawn
         self.bullets_speed = bullets_speed
         self.actions = [0 for _ in range(num_actions)]
+        self.survive_reward = survive_reward
+        self.death_reward = death_reward
+        self.hold_shift = hold_shift
         # End env if dead
         self.terminate_on_death = terminate_on_death
         # Action dict. Map action to pressed keys:
@@ -72,8 +78,8 @@ class BOWAPEnv(gym.Env):
         # Hitbox info
         self.init_hitbox_pos_x = self.max_x // 2
         self.init_hitbox_pos_y = self.max_y - 24 * 4
-        self.hitbox_size = 4
-        self.grazebox_size = 8
+        self.hitbox_size = 3
+        self.grazebox_size = 24
 
         # Hero images to render
         self.hero_surface = pygame.Surface((72, 48))
@@ -135,6 +141,9 @@ class BOWAPEnv(gym.Env):
         # Get pressed keys from action
         up, down, left, right, shift = self.action_dict[action]
 
+        if self.hold_shift and self.num_actions <= 9:
+            shift = True
+
         # If both up and down are pressed, move up
         if up and down:
             down = False
@@ -172,8 +181,12 @@ class BOWAPEnv(gym.Env):
         # reward = closest_dist / self.max_dist
 
         # Reward increases as player survives
-        reward = -1 #self.frames_from_last_death / 1000 #0.1 + graze_count * 0.2
+        reward = self.frames_from_last_death / 120 - graze_count / 2 +\
+                 np.abs(self.state[0] - self.init_hitbox_pos_x) / 800 +\
+                 np.abs(self.state[1] - self.init_hitbox_pos_y) / 800
 
+
+        reward = float(reward)
         #if action != 0:
             #reward /= 2
         # reward = 1
@@ -187,16 +200,16 @@ class BOWAPEnv(gym.Env):
             # Set increasing reward to 0
             self.frames_from_last_death = 0
             # Death reward -100
-            reward = -50
+            reward = self.death_reward
 
             self.state[0] = self.init_hitbox_pos_x
             self.state[1] = self.init_hitbox_pos_y
 
         # Done if timer gone
         done = True if self.frame >= self.max_frame else False
-        if done:
-            reward = self.frame / 60
-        info = {'total_deaths': self.deaths, 'frames': self.frame, 'max_frames': self.max_frame, 'actions': self.actions}
+        if done and not collide_flag:
+            reward += 10
+        info = {'total_deaths': self.deaths, 'frames': self.frame, 'max_frames': self.max_frame, 'actions': self.actions, 'dead': collide_flag}
         if self.terminate_on_death and collide_flag:
             done = True
             #reward = (self.frame - self.max_frame) / 60
@@ -210,7 +223,7 @@ class BOWAPEnv(gym.Env):
         # Paste images on playfield
         playfield.blit(self.hero_surface, hero_rect)
         bullet_group.draw(playfield)
-        return pygame.surfarray.array3d(playfield)
+        return pygame.surfarray.array3d(playfield)[:, :, [2, 1, 0]]
 
     def render(self):
         pass

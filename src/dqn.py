@@ -13,13 +13,14 @@ class DQN(nn.Module):
         self.conv1 = nn.Conv2d(in_channels, 32, kernel_size=8, stride=4)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2)
         self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1)
-        self.fc1 = nn.Linear(7744, 256)  # Adjust based on output of conv layers
+        self.fc1 = nn.Linear(12*12*64, 256)  # Adjust based on output of conv layers
         self.fc2 = nn.Linear(256, action_space)
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
         x = F.relu(self.conv3(x))
+        #print(x.shape)
         x = x.view(x.size(0), -1)
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
@@ -35,7 +36,7 @@ class ReplayBuffer(object):
 
     def sample(self, batch_size):
         state, action, reward, next_state, done = zip(*random.sample(self.buffer, batch_size))
-        return  torch.cat(state, dim=0).float(), torch.LongTensor(action), torch.FloatTensor(reward), torch.cat(next_state, dim=0).float(), torch.FloatTensor(done)
+        return torch.cat(state, dim=0).float(), torch.LongTensor(action), torch.FloatTensor(reward), torch.cat(next_state, dim=0).float(), torch.FloatTensor(done)
 
     def __len__(self):
         return len(self.buffer)
@@ -77,7 +78,7 @@ class DQNAgent(object):
 
         # Huber loss for robustness to outliers
         loss = nn.functional.smooth_l1_loss(q_values, expected_q_values)
-        print(loss)
+        #print(loss)
 
         self.optimizer.zero_grad()
         loss.backward()
@@ -89,3 +90,6 @@ class DQNAgent(object):
     def update_target_network(self, tau=0.125):  # Update target network with a polyak update rule (optional)
         for target_param, local_param in zip(self.target_net.parameters(), self.policy_net.parameters()):
             target_param.data.copy_(tau * local_param.data + (1.0 - tau) * target_param.data)
+
+    def update_epsilon(self, epsilon):
+        self.epsilon = epsilon
