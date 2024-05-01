@@ -181,8 +181,8 @@ class BOWAPEnv(gym.Env):
         # reward = closest_dist / self.max_dist
 
         # Reward increases as player survives
-        reward = self.frames_from_last_death / 120 - graze_count / 2 +\
-                 np.abs(self.state[0] - self.init_hitbox_pos_x) / 800 +\
+        reward = self.frames_from_last_death / 120 - graze_count / 2 -\
+                 np.abs(self.state[0] - self.init_hitbox_pos_x) / 800 -\
                  np.abs(self.state[1] - self.init_hitbox_pos_y) / 800
 
 
